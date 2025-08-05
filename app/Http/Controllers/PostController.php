@@ -12,7 +12,9 @@ class PostController extends Controller
      */
     public function index()
     {  
-        return Post::all();
+        // return "hi";
+        // return Post::all(); 
+        return response()->json(Post::latest()->get(), 200);
     }
 
     /**
@@ -20,11 +22,21 @@ class PostController extends Controller
      */
     public function create()
     {
-        $request->validate([
-            'title' => 'required|string',
-            'body' =>'required|string'
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body'  => 'required|string',
+            'user_id' => 'required|exists:users,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'status' => ['required', Rule::in(['draft', 'published'])],
         ]);
-        return Post::create($request->all());
+
+        $validated['slug'] = Str::slug($validated['title']);
+
+        $post = Post::create($validated);
+
+        return response()->json(['message' => 'Post created successfully', 'post' => $post], 201);
     }
 
     /**
@@ -40,8 +52,14 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        return $post;
-    }
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
+        return response()->json($post, 200);
+    } 
 
     /**
      * Show the form for editing the specified resource.
@@ -54,21 +72,49 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Post $post)
+     public function update(Request $request, $id)
     {
-        $post->update($request->all());
-        return $post;
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'body'  => 'sometimes|required|string',
+            'user_id' => 'sometimes|required|exists:users,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'status' => ['sometimes', Rule::in(['draft', 'published'])],
+        ]);
+
+        if (isset($validated['title'])) {
+            $validated['slug'] = Str::slug($validated['title']);
+        }
+
+        $post->update($validated);
+
+        return response()->json(['message' => 'Post updated', 'post' => $post], 200);
     }
+
 
     /**
      * Remove the specified resource from storage.
-     */
-    public function destroy(Post $post)
+     */ 
+    // DELETE /api/posts/{id}
+    public function destroy($id)
     {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
         $post->delete();
-        return response()->json([
-            'message' =>'Post deleted'
-        ]);
+
+        return response()->json(['message' => 'Post deleted successfully'], 200);
     }
 }
 

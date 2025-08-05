@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\PostController; 
 use App\Http\Controllers\AuthController; 
+use App\Http\Controllers\CategoryController; 
 
 // ✅ Auth routes (public)
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,4 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::apiResource('posts', PostController::class); // ✅ Secure Posts API
+    Route::apiResource('categories', CategoryController::class);
+    
 });

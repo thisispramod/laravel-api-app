@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -44,7 +46,20 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body'  => 'required|string', 
+            'category_id' => 'nullable|exists:categories,id',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'status' => ['required', Rule::in(['draft', 'published'])],
+        ]);
+        $validated['user_id'] = $request->user()->id;  
+        $validated['slug'] = Str::slug($validated['title']);
+
+        $post = Post::create($validated);
+
+        return response()->json(['message' => 'Post created successfully', 'post' => $post], 201); 
     }
 
     /**

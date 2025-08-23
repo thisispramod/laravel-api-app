@@ -18,5 +18,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     Route::apiResource('posts', PostController::class);
+    // Route::middleware(['throttle:posts'])->group(function () {
+    //     Route::post('/posts', [PostController::class, 'store']);
+    // });
     Route::apiResource('categories', CategoryController::class); 
-});
+    Route::apiResource('user', AuthController::class); 
+}); 

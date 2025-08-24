@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+// use App\Notifications\WelcomeNotification;
+use Illuminate\Auth\Events\Registered;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +28,9 @@ class AuthController extends Controller
             'password' => bcrypt($request->password)
         ]);
 
+        // $user -> notify(new WelcomeNotification());
+        // event(new Registered($user));
+        
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json(['user' => $user, 'token' => $token]);

@@ -14,9 +14,19 @@ class PostController extends Controller
      */
     public function index()
     {  
-        // return "hi";
-        // return Post::all(); 
-        return response()->json(Post::latest()->get(), 200);
+        $posts = Post::with('user:id,name')->get();
+
+        return response()->json(
+            $posts->map(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'body' => $post->body,
+                    'created_by' => $post->user->name ?? 'Unknown',
+                    'created_at' => $post->created_at,
+                ];
+            })
+        );
     }
 
     /**
@@ -65,16 +75,24 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post)
+    public function show($id)
     {
-        $post = Post::find($id);
-
+        $post = Post::with('user:id,name')->find($id); 
         if (!$post) {
             return response()->json(['message' => 'Post not found'], 404);
         }
 
-        return response()->json($post, 200);
-    } 
+        // Return JSON with user name
+        return response()->json([
+            'id' => $post->id,
+            'title' => $post->title,
+            'body' => $post->body,
+            'created_by' => $post->user->name ?? 'Unknown', // show name
+            'created_at' => $post->created_at,
+            'meta_description' => $post->meta_description,
+        ]);
+    }
+
 
     /**
      * Show the form for editing the specified resource.

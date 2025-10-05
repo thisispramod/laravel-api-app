@@ -6,11 +6,9 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController; 
 use App\Http\Controllers\CategoryController; 
 
-// ✅ Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// ✅ Protected routes (require token)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
@@ -18,6 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     Route::apiResource('posts', PostController::class);
+    Route::get('/posts/{id}', [PostController::class, 'show']);
     // Route::middleware(['throttle:posts'])->group(function () {
     //     Route::post('/posts', [PostController::class, 'store']);
     // });
